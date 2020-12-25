@@ -47,6 +47,7 @@ func Load() (*Config, error) {
 		BounceDuration: time.Duration(10) * time.Second,
 		BounceTimeout:  time.Duration(10) * time.Minute,
 		HighPin:        21,
+		LowPin:         -1,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
