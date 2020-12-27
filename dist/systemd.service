@@ -1,0 +1,15 @@
+[Unit]
+Description=Verify network connectivity and "bounce" the modem if connection lost
+After=syslog.target
+
+[Service]
+ExecStart=/usr/bin/bouncer -config /etc/bouncer.yaml
+
+StandardOutput=syslog
+StandardError=syslog
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

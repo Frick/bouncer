@@ -11,9 +11,10 @@ import (
 type Config struct {
 	Config         string        `dialsdesc:"path to YAML config"`
 	CheckInterval  time.Duration `yaml:"check-interval" dialsdesc:"duration between checks"`
-	CheckSkew      time.Duration `yaml:"check-skew" dialsdesc:"amount of time, plus or minus, by which to skew the check interval"`
+	CheckJitter    time.Duration `yaml:"check-jitter" dialsdesc:"amount of time, plus or minus, by which to skew the check interval"`
 	CheckTimeout   time.Duration `yaml:"check-timeout" dialsdesc:"the total time allowed for a check to succeed"`
 	RetryInterval  time.Duration `yaml:"retry-interval" dialsdesc:"after a check has failed, duration between retries"`
+	RetryJitter    time.Duration `yaml:"retry-jitter" dialsdesc:"amount of time, plus or minus, by which to skew retries"`
 	Failures       int           `yaml:"failures" dialsdesc:"number of failures before triggering a 'bounce'"`
 	BounceDuration time.Duration `yaml:"bounce-duration" dialsdesc:"how long the bouncer should trigger, ie. off for 10s"`
 	BounceTimeout  time.Duration `yaml:"bounce-timeout" dialsdesc:"how long to wait after triggering a bounce to resume the normal check interval"`
@@ -21,6 +22,7 @@ type Config struct {
 	LowPin         int           `yaml:"low-pin" dialsdesc:"optional: GPIO pin (not board pinout) that is to be used for a low/ground signal"`
 	Sites          []string      `yaml:"sites" dialsdesc:"website(s) to check"`
 	Version        bool          `dialsdesc:"print version and exit"`
+	Debug          bool          `dialsdesc:"enable debug-level logging"`
 }
 
 // ConfigPath returns the path to the config file that Dials should read. This
@@ -40,9 +42,10 @@ func (c *Config) ConfigPath() (string, bool) {
 func Load() (*Config, error) {
 	c := &Config{
 		CheckInterval:  time.Duration(2) * time.Minute,
-		CheckSkew:      time.Duration(10) * time.Second,
+		CheckJitter:    time.Duration(10) * time.Second,
 		CheckTimeout:   time.Duration(30) * time.Second,
 		RetryInterval:  time.Duration(20) * time.Second,
+		RetryJitter:    time.Duration(4) * time.Second,
 		Failures:       5,
 		BounceDuration: time.Duration(10) * time.Second,
 		BounceTimeout:  time.Duration(10) * time.Minute,

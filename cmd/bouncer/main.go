@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
+	"github.com/frick/bouncer/pkg/checks"
 	"github.com/frick/bouncer/pkg/conf"
 	"github.com/frick/bouncer/pkg/gpio"
 	log "github.com/sirupsen/logrus"
@@ -37,18 +37,23 @@ func main() {
 		os.Exit(0)
 	}
 
-	// verify config parsing before proceeding with further app development
-	fmt.Printf("Config: %+v\n", cfg)
+	// enable debug level logging if specified
+	if cfg.Debug {
+		log.SetLevel(log.DebugLevel)
+	}
 
-	log.WithFields(log.Fields{"highPin": cfg.HighPin, "lowPin": cfg.LowPin}).Info("initializing GPIO")
+	log.WithFields(log.Fields{"app": os.Args[0], "version": Version}).Info("starting")
+	defer log.WithFields(log.Fields{"app": os.Args[0], "version": Version}).Info("exiting")
+	log.WithFields(log.Fields{"config": fmt.Sprintf("%+v", cfg)}).Debug("final configuration")
+
+	// initialize our GPIO interface to our relay
 	relay, gpioErr := gpio.Init(cfg.HighPin, cfg.LowPin)
 	if gpioErr != nil {
 		log.WithFields(log.Fields{"err": gpioErr}).Error("could not initialize GPIO")
 		os.Exit(3)
 	}
+	defer relay.Close()
 
-	log.Info("sleeping for 5 seconds")
-	time.Sleep(5 * time.Second)
-	log.WithFields(log.Fields{"duration": cfg.BounceDuration}).Info("bouncing relay")
-	relay.Trigger(cfg.BounceDuration)
+	// start our never-ending loop of internet connectivity checking
+	checks.CheckLoop(cfg, relay)
 }
